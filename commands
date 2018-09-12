@@ -1,0 +1,161 @@
+Docker: 
+Docker creates Immutable Infrastructural Environment. Immutable Infrastructure stack based deployment.
+
+Docker is automation technology for containers. Containerization is OS’s native feature. Linux allows containerization and hence Docker can automate it on Linux.
+
+https://hub.docker.com/
+
+### Login to vagrant machine: vagrant up && vagrant ssh 
+or your cloud VM ###
+
+#
+sudo curl -sSL https://get.docker.com/ | sh
+docker pull ubuntu
+docker run -it ubuntu bash
+apt-get update
+exit
+docker ps
+docker ps -a
+
+#
+[1] Application/process isolation: It is called Namespaces
+[2] Filesystem/storage isolation: It is called Chroot. It is also called jailed environment.
+[3] Resource isolation: It is called Cgroup. 
+
+[1] Application/process isolation:
+
+top
+unshare --fork --pid --mount-proc bash
+top
+exit
+top
+
+[2] storage isolation: 
+
+echo $HOME
+pwd
+J=$HOME/jail
+mkdir -p $J/{bin,lib64,lib}
+tree
+cp -v /bin/{bash,ls} /root/jail/bin/
+ldd /bin/bash
+cp -v /lib/x86_64-linux-gnu/libtinfo.so.5 /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libc.so.6 $J/lib
+cp -v /lib64/ld-linux-x86-64.so.2 /root/jail/lib64/
+ldd /bin/ls
+cp -v /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/libpcre.so.3 /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libpthread.so.0 $J/lib
+cp -v /lib64/ld-linux-x86-64.so.2 $J/lib64
+
+chroot $J /bin/bash
+pwd
+ls
+exit
+
+[3] Resource isolation:
+
+apt-get install cgroup-tools -y
+adduser user1
+cgcreate -a user1 -g memory:mycoolgroup
+cd /sys/fs/cgroup/
+ls
+cd memory
+ls
+
+
+
+docker images
+docker pull fedora
+docker images
+docker run -it fedora bash
+dnf install firefox -y
+exit
+docker ps
+docker run -it ubuntu bash
+ps aux
+control + pq  [to exit docker without shutting it down]
+docker exec -it [container ID] bash
+exit
+docker start [container ID]
+docker ps
+docker exec -it [container ID] bash
+exit
+docker stop [container ID]
+docker ps
+docker restart [container ID]
+docker rm [container ID]
+
+docker run -d -p 80:5000 training/webapp python app.py
+	where: -d:  deamon mode, -p: port
+docker ps
+docker inspect [container ID]    — To check IP address for that container
+apt-get install lynx
+lynx 172.17.0.2:5000
+ip a
+lynx 127.0.0.1:80
+lynx 127.0.0.1
+lynx 192.168.33.100
+
+docker exec -it ca9e52af0b23 bash
+ls
+ps aux
+exit
+
+docker run -d ubuntu bash
+docker ps
+docker ps -a
+
+docker run -d ubuntu echo "Hello world"
+docker ps -a
+
+docker run ubuntu echo "Hello world"
+docker ps -a
+
+docker run ubuntu apt-get update
+docker ps -a
+
+docker run -d ubuntu tail -f /dev/null
+docker ps
+
+docker top [container ID]
+
+docker logs [container ID]
+
+#How to create storage container which acts like pen drive:
+
+docker create -v /tmp --name datacontainer ubuntu  [It gets mounted on /tmp and it can't be accessed without mounting it to other docker container]
+
+# How to create a container and mount a storage container:
+
+docker run -it --volumes-from datacontainer ubuntu /bin/bash
+echo “Hello world” > /tmp/file1
+exit
+docker rm [container  ID]
+docker run -it --volumes-from datacontainer ubuntu /bin/bash
+cat /tmp/file1
+exit
+[Whatever is written under /tmp will be stored on storage container named “datacontainer”.]
+
+
+# How to make your main system (vagrant VM) a storage directory for your docker container:
+
+touch ~/file1
+docker run -d -v ~/:/tmp -i ubuntu /bin/bash
+ls -ll /tmp/
+exit
+
+
+# How to create docker snapshot -> image -> create a docker from that image:
+
+docker images
+docker run -it fedora bash
+yum install httpd -y
+exit
+
+docker ps -a
+
+docker commit [container id] fedora-httpd
+
+docker images
+
+docker run -it fedora-httpd
+yum info httpd
+exit
