@@ -1,7 +1,12 @@
-Docker: 
+✅Docker: 
 Docker creates Immutable Infrastructural Environment. Immutable Infrastructure stack based deployment.
 
 Docker is automation technology for containers. Containerization is OS’s native feature. Linux allows containerization and hence Docker can automate it on Linux.
+
+- Introduction to Containers: https://stme.in/i7Z1FwY5Bl (20 min)
+- Namespaces, Cgroups, Chroot, Introduction to Docker: https://stme.in/FGzr8q6XZ1
+- Docker Commands, Lifecycle, Network, Immutable Infrastructure, Daemon mode etc. : https://stme.in/GX8lLYkwZA
+- Docker storage and command line: /Users/karnikmodi/Downloads/DEVOPS.mp4
 
 https://hub.docker.com/
 
@@ -83,6 +88,9 @@ docker ps
 docker restart [container ID]
 docker rm [container ID]
 
+
+# port forwarding using Docker: [ port#80 = vagrant VM, port#5000 = docker container]
+
 docker run -d -p 80:5000 training/webapp python app.py
 	where: -d:  deamon mode, -p: port
 docker ps
@@ -115,9 +123,17 @@ docker ps -a
 docker run -d ubuntu tail -f /dev/null
 docker ps
 
+# To watch process table inside the container:
 docker top [container ID]
 
+# To check docker container logs:
 docker logs [container ID]
+
+# To watch logs continuously:
+docker logs -f [container ID]
+
+#To check ports used by docker container:
+docker port [container ID]
 
 #How to create storage container which acts like pen drive:
 
@@ -159,3 +175,62 @@ docker images
 docker run -it fedora-httpd
 yum info httpd
 exit
+
+#Create docker using docker command line:
+
+[1]
+
+mkdir dockerbuild
+cd dockerbuild
+vim Dockerfile
+
+	FROM ubuntu									|
+	MAINTAINER modikarnik9@gmail.com                          	|
+	RUN apt-get update							|
+	RUN apt-get install -y nginx						|
+	CMD service start nginx && tail -f /dev/null			|  <— This fails to keep docker alive. 													Exited (1) — Incorrect exit
+
+docker build -t mynginx .    [to create docker image]
+
+docker images
+
+docker run -d mynginx bash
+service nginx status
+exit
+
+docker ps
+docker ps -a
+
+[2] 
+mkdir ~/dockerbuild2
+cd ~/dockerbuild2
+vim Dockerfile
+
+	FROM ubuntu
+	MAINTAINER modikarnik9@gmail.com
+	RUN apt-get update
+	RUN apt-get install -y nginx
+	CMD tail -f /dev/null
+
+docker build -t mynginx2 .
+docker run -d mynginx2
+docker ps
+
+[3]
+mkdir ~/dockerbuild3
+cd ~/dockerbuild3
+vim Dockerfile
+
+	FROM ubuntu
+	MAINTAINER modikarnik9@gmail.com
+	RUN apt-get update
+	RUN apt-get install -y nginx
+	CMD ["sh", "-c", "service nginx start ; tail -f /dev/null"]
+
+docker build -t mynginx3 .
+docker run -d mynginx3
+docker ps
+
+—————————————————————
+In dockerfile, RUN can be used multiple times but CMD can only be used ones
+—————————————————————
